@@ -4,17 +4,24 @@ import sys
 import db
 
 def create(phonebook):
-    try:
-        db.create_db()
-    except sqlite3.OperationalError:
-        print "Phonebook exists"
-
-def add(name, number, phonebook):
-    status = db.add_entry(phonebook, (name, number))
+#     from pudb import set_trace; set_trace()
+    status = db.add_phonebook(phonebook)
     if status:
-        print "%s added to %s with number %s" % (name, phonebook, number)
+        print "%s created" % phonebook
     else:
-        print "Error: phonenumber %s already present in %s" % (number, phonebook)
+        print "Error: phonenumber %s already present" % phonebook
+    
+def add(name, number, phonebook):
+    from pudb import set_trace; set_trace()
+    pb_id = db.get_phonebook_id(phonebook)
+    if pb_id:
+        status = db.add_entry(pb_id[0], (name, number))
+        if status:
+            print "%s added to %s with number %s" % (name, phonebook, number)
+        else:
+            print "Error: phonenumber %s already present in %s" % (number, phonebook)
+    else:
+        print "Error: phonebook does not exist"
 
 def change():
     pass

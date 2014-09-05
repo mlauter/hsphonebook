@@ -19,7 +19,7 @@ def add(name, number, phonebook):
         if status:
             print "%s added to %s with number %s" % (name, phonebook, number)
         else:
-            print "Error: phonenumber %s already present in %s" % (number, phonebook)
+            print "Error: name: %s or number: %s already present in %s" % (name,number , phonebook)
     else:
         print "Error: phonebook does not exist"
 
@@ -27,8 +27,29 @@ def change():
     pass
     
 def lookup(name, phonebook):
-    results = db.lookup(name, phonebook)
-    print results
+    from pudb import set_trace; set_trace()
+    pb_id = db.get_phonebook_id(phonebook)
+    if pb_id:
+        contact_info = db.lookup_contact(name) #what happens if this returns multiple rows??
+        if contact_info:
+            found = False
+            for contact in contact_info:
+                map_id = db.lookup_in_mapping(pb_id[0],contact[0])
+
+                if map_id:
+                    print name + ' ' + contact[2]
+                    found = True
+            if not found:
+                print "Error: %s not found in %s" % (name, phonebook)
+        else:
+            print "Error: %s not found" % (name)
+    else:
+        print "Error: phonebook does not exist"
+    #lookup contact
+    #lookup phonebook
+    #check mapping
+    # if in mapping: return number
+    # otherwise: error
 
 def reverse_lookup(number, phonebook):
     results = db.lookup(name, phonebook)

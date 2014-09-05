@@ -4,7 +4,7 @@ conn = sqlite3.connect('phonebook.db', check_same_thread= False)
 
 def create_db():
     c = conn.cursor()
-    c.execute('CREATE TABLE contacts ( id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, phonenum TEXT UNIQUE)')
+    c.execute('CREATE TABLE contacts ( id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE, phonenum TEXT UNIQUE)')
     c.execute('CREATE TABLE phonebooks ( id INTEGER PRIMARY KEY AUTOINCREMENT, phonebook_name TEXT UNIQUE)')
     c.execute('CREATE TABLE mapping ( id INTEGER PRIMARY KEY AUTOINCREMENT, phonebook_id INTEGER, contact_id INTEGER)')
     conn.commit()
@@ -37,14 +37,18 @@ def add_entry(phonebook_id, entry):
 def update_mapping(phonebook_id, entry):
     c = conn.cursor()
     c.execute('SELECT id from contacts WHERE name=?', (entry[0],))
-    contact_id = c.fetchone()[0]
-    present = lookup_in_mapping(phonebook_id, contact_id)
-    if not present:
-        with conn:
-            conn.execute('INSERT INTO mapping VALUES (NULL, ?, ?)', (phonebook_id, contact_id))
-        return True
+    contact_id = c.fetchone()
+    if contact_id:
+        present = lookup_in_mapping(phonebook_id, contact_id[0])
+        if not present:
+            with conn:
+                conn.execute('INSERT INTO mapping VALUES (NULL, ?, ?)', (phonebook_id, contact_id[0]))
+            return True
+        else:
+            return False
     else:
         return False
+        # the contact is not in the contacts table (could not be added because of phone number uniqueness constraint)
 
 def lookup_in_mapping(phonebook_id, contact_id):
     c = conn.cursor()
@@ -53,9 +57,9 @@ def lookup_in_mapping(phonebook_id, contact_id):
     return mapping_id # returns tuple with ID or none
 
 
-def lookup(phonebook, name):
+def lookup_contact(name):
     c = conn.cursor()
-    c.execute('SELECT * FROM phonebook WHERE phonebook=? AND name=?', phonebook, name)
+    c.execute('SELECT * FROM contacts WHERE name=?', (name,))
     data = c.fetchall()
     return data
 
